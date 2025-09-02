@@ -3,7 +3,8 @@ version: '3.8'
 services:
   api:
     build:
-      context: ./docker
+      context: .          # root of the repo
+      dockerfile: docker/Dockerfile  # explicitly point to your Dockerfile
     container_name: sales-api
     ports:
       - "8000:8000"
