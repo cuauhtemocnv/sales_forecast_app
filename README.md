@@ -121,8 +121,4 @@ Now the API is available at `http://localhost:8000/forecast`.
 ---
 
 ## 🙌 Author
-This project is a learning + portfolio template for **Data Science / ML Engineering roles** in Mexico’s AI job market.
-
----
-
-✅ With this, you can demo both **analytics** (dashboard) and **engineering** (API + Docker) skills!
+This project is a project included in portfolio 
