@@ -5,16 +5,18 @@ import shutil
 
 # Paths
 DATA_DIR = "data"
-ZIP_PATH = os.path.expanduser("~/Downloads/walmart-dataset.zip")
+# Use /tmp for temporary downloads
+ZIP_PATH = "/tmp/walmart-dataset.zip"
 CSV_NAME = "Walmart.csv"
 DEST_PATH = os.path.join(DATA_DIR, "walmart.csv")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Step 1: Download the dataset with curl (requires Kaggle API logged in)
+# Step 1: Download the dataset with wget
 print("Downloading Walmart dataset...")
+# Using wget as an alternative to curl
 subprocess.run([
-    "curl", "-L", "-o", ZIP_PATH,
+    "wget", "-O", ZIP_PATH,
     "https://www.kaggle.com/api/v1/datasets/download/yasserh/walmart-dataset"
 ], check=True)
 
