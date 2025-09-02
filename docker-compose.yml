@@ -1,17 +1,5 @@
 version: '3.8'
-
 services:
-  api:
-    build:
-      context: .          # root of the repo
-      dockerfile: docker/Dockerfile  # explicitly point to your Dockerfile
-    container_name: sales-api
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
-    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
   dashboard:
     image: python:3.9-slim
     container_name: sales-dashboard
@@ -22,12 +10,30 @@ services:
     working_dir: /app
     command: >
       sh -c "
-      apt-get update &&  # Update package lists 
-      apt-get install -y wget &&  # Install wget
-      pip install --no-cache-dir -r requirements.txt &&
+      apt-get update && 
+      apt-get install -y wget &&
+      pip install --no-cache-dir jupyter -r requirements.txt &&
       python scripts/download_dataset.py &&
       jupyter nbconvert --to notebook --execute notebooks/eda_modeling.ipynb --inplace &&
       streamlit run app/dashboard.py --server.port 8501 --server.address 0.0.0.0
       "
+    healthcheck:
+      test: ["CMD", "test", "-f", "models/prophet_model.pkl"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 60s
+
+  api:
+    build:
+      context: .          
+      dockerfile: docker/Dockerfile
+    container_name: sales-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
-      - api
+      dashboard:
+        condition: service_healthy
