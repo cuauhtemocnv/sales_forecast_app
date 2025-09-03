@@ -93,8 +93,7 @@ curl "http://127.0.0.1:8000/forecast?days=30"
 ## 🐳 6. Run with Docker
 ```bash
 # Build image
-docker build -t sales-api ./docker
-
+docker-compose up --build
 # Run container
 docker run -p 8000:8000 sales-api
 ```
