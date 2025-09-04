@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sales-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sales-dashboard
+  template:
+    metadata:
+      labels:
+        app: sales-dashboard
+    spec:
+      initContainers:
+      - name: download-and-train
+        image: python:3.9-slim
+        command: ['sh', '-c']
+        args:
+          - |
+            apt-get update &&
+            apt-get install -y wget &&
+            pip install --no-cache-dir -r requirements.txt &&
+            python scripts/download_dataset.py &&
+            python scripts/train_model.py --make-dirs
+        volumeMounts:
+        - name: app-data
+          mountPath: /app
+      containers:
+      - name: streamlit-app
+        image: python:3.9-slim
+        command: ['sh', '-c']
+        args:
+          - |
+            pip install --no-cache-dir -r requirements.txt &&
+            streamlit run app/dashboard.py --server.port 8501 --server.address 0.0.0.0
+        ports:
+        - containerPort: 8501
+        volumeMounts:
+        - name: app-data
+          mountPath: /app
+        readinessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 30  # Give enough time for training to complete
+          periodSeconds: 5
+      volumes:
+      - name: app-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sales-dashboard-service
+spec:
+  selector:
+    app: sales-dashboard
+  ports:
+    - protocol: TCP
+      port: 8501
+      targetPort: 8501
+  type: NodePort
